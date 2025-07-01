@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SPIN – Furniture Mock-up</title>
+  <meta name="description" content="This is a demo of a furniture store UI made for educational or testing purposes. No real transactions." />
+  <meta name="robots" content="noindex, nofollow" />
+  <style>
+    ::before,*::after{box-sizing:border-box;margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;}
+    body{background:#fff;color:#222;}
+    a{text-decoration:none;color:inherit;}
+    .navbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #eee;}
+    .nav-left{display:flex;align-items:center;gap:12px;min-width:0;}
+    .menu-btn{cursor:pointer;font-size:28px;border:none;background:none;line-height:1;}
+    .search{display:flex;align-items:center;gap:8px;flex:1;max-width:360px;}
+    .search span{font-size:18px;opacity:.7;}
+    .search input{flex:1;padding:6px 12px;border:1px solid #ccc;border-radius:4px;min-width:0;}
+    .logo{font-size:32px;font-weight:800;letter-spacing:-1px;}
+    .nav-right{display:flex;align-items:center;gap:24px;font-size:24px;cursor:pointer;}
+    .cart-icon{position:relative;}
+    .cart-count{position:absolute;top:-8px;right:-12px;background:#222;color:#fff;border-radius:50%;font-size:11px;padding:1px 4px;line-height:1;}
+
+    .circles-wrapper{display:flex;justify-content:space-between;padding:50px 8vw;flex-wrap:nowrap;gap:0;}
+    .circle-item{text-align:center;cursor:pointer;flex:0 0 auto;}
+    .circle-item .label-top{display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:16px;font-weight:500;text-transform:capitalize;gap:8px;}
+    .circle{width:100px;height:100px;border-radius:50%;overflow:hidden;border:3px solid #e4e4e4;display:flex;align-items:center;justify-content:center;transition:border-color .25s ease;}
+    .circle img{width:100%;height:100%;object-fit:cover;}
+    .circle-item:hover .circle{border-color:#000;}
+    .circle-item .label-bottom{display:block;margin-top:10px;min-height:22px;font-size:14px;color:#888;}
+
+    .products-section{padding:20px 6vw 60px;}
+    .products-grid{display:grid;grid-template-columns:repeat(3, 1fr);gap:30px;}
+    .product-card{font-size:15px;}
+    .product-card .image-wrap{position:relative;width:100%;aspect-ratio:1/1;background:#f8f8f8;overflow:hidden;}
+    .product-card img{width:100%;height:100%;object-fit:cover;transition:transform .3s ease;}
+    .product-card:hover img{transform:scale(1.05);}
+    .add-cart{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);padding:10px 24px;border:none;border-radius:3px;background:#e5e5e5;font-weight:600;opacity:0;pointer-events:none;transition:opacity .25s ease;cursor:pointer;}
+    .product-card:hover .add-cart{opacity:1;pointer-events:auto;}
+    .prod-name{margin-top:14px;font-weight:600;}
+    .swatch-row{display:flex;align-items:center;gap:4px;margin:6px 0;}
+    .swatch{width:18px;height:18px;border-radius:3px;border:1px solid #ccc;}
+    .prod-price{font-weight:700;margin-top:2px;}
+    .text-center{text-align:center;}
+
+    @media (max-width: 900px) {
+      .products-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 600px) {
+      .products-grid { grid-template-columns: 1fr; }
+    }
+
+    .cart-page{padding:20px 6vw;display:none;}
+    .cart-items{display:grid;grid-template-columns:repeat(auto-fill, minmax(380px, 2fr));gap:30px;margin-top:30px;}
+    .cart-total{margin-top:20px;text-align:right;font-weight:700;font-size:18px;}
+
+    footer{border-top:1px solid #eee; padding:16px; text-align:center; font-size:14px; color:#666;}
+  </style>
+</head>
+<body>
+  <header class="navbar">
+    <div class="nav-left">
+      <button class="menu-btn" id="menuToggle">&#9776;</button>
+      <div class="search">
+        <span>&#128269;</span>
+        <input type="text" placeholder="What are you looking for?" />
+      </div>
+    </div>
+    <div class="logo">SPIN</div>
+    <div class="nav-right">
+      <span title="Account">&#128100;</span>
+      <span class="cart-icon" id="cartIcon" title="Cart">&#128722;<span class="cart-count" id="cartCount">0</span></span>
+    </div>
+  </header>
+
+  <section class="circles-wrapper">
+    <div class="circle-item" data-cat="dining">
+      <span class="label-top">Dining</span>
+      <div class="circle"><img src="assets/dining/dining wp.avif" alt="dining"/></div>
+    </div>
+    <div class="circle-item" data-cat="accessories">
+      <span class="label-top">Accessories</span>
+      <div class="circle"><img src="assets/Accessories/acc wp.avif" alt="accessories"/></div>
+    </div>
+    <div class="circle-item" data-cat="living">
+      <span class="label-top">Living</span>
+      <div class="circle"><img src="assets/Living/living wp.avif" alt="living"/></div>
+    </div>
+  </section>
+
+  <section class="products-section" id="productsSection">
+    <h2 id="sectionHeading" class="text-center">All Products</h2>
+    <div class="products-grid" id="productsGrid"></div>
+  </section>
+
+  <section class="cart-page" id="cartPage">
+    <h2 class="text-center">Cart </h2>
+    <div class="cart-items" id="cartItems"></div>
+    <div class="cart-total"> Total: ₹<span id="cartTotal">0</span></div>
+  </section>
+
+  
+
+  <script>
+    const productsData = {
+      dining:[
+        {name:'Dining Table',price:'₹6799',img:'assets/dining/dining 1.avif'},
+        {name:'Crockery',price:'₹11900',img:'assets/dining/dining 2.avif'},
+        {name:'Lamp',price:'₹9450',img:'assets/dining/dining 3.avif'},
+        {name:'Wash Basin',price:'₹5300',img:'assets/dining/dining 4.avif'},
+        {name:'Plants',price:'₹7100',img:'assets/dining/dining 5.avif'},
+        {name:'Wine Glass',price:'₹12000',img:'assets/dining/dining 6.avif'}
+      ],
+      accessories:[
+        {name:'Lamp Set',price:'₹8990',img:'assets/Accessories/acc 1.avif'},
+        {name:'Candle Holder',price:'₹5699',img:'assets/Accessories/acc 2.avif'},
+        {name:'Photo Frame',price:'₹14500',img:'assets/Accessories/acc 3.avif'},
+        {name:'Showpiece',price:'₹9299',img:'assets/Accessories/acc 4.avif'},
+        {name:'Table Clock',price:'₹10000',img:'assets/Accessories/acc 5.avif'},
+        {name:'Mirror',price:'₹6750',img:'assets/Accessories/acc 6.avif'}
+      ],
+      living:[
+        {name:'Book Shelf ',price:'₹12200',img:'assets/Living/living 1.avif'},
+        {name:'Sofa',price:'₹15999',img:'assets/Living/living 2.avif'},
+        {name:'TV Unit',price:'₹9950',img:'assets/Living/living 3.avif'},
+        {name:'Chair',price:'₹8000',img:'assets/Living/living 4.avif'},
+        {name:'Lamp',price:'₹13500',img:'assets/Living/living 5.avif'},
+        {name:'Curtain',price:'₹14100',img:'assets/Living/living 6.avif'}
+      ]
+    };
+
+    const productsGrid = document.getElementById('productsGrid');
+    const cartItems = document.getElementById('cartItems');
+    const cartPage = document.getElementById('cartPage');
+    const productsSection = document.getElementById('productsSection');
+    const cartTotal = document.getElementById('cartTotal');
+    const cartCount = document.getElementById('cartCount');
+    let cart = [];
+
+    function renderProducts(cat = null) {
+      const sectionHeading = document.getElementById('sectionHeading');
+      productsSection.style.display = 'block';
+      cartPage.style.display = 'none';
+
+      let items = [];
+      if (cat && productsData[cat]) {
+        items = productsData[cat];
+        sectionHeading.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+      } else {
+        Object.values(productsData).forEach(arr => items.push(...arr));
+        sectionHeading.textContent = 'All Products';
+      }
+
+      productsGrid.innerHTML = items.map(item => `
+        <div class="product-card">
+          <div class="image-wrap">
+            <img src="${item.img}" alt="${item.name}" />
+            <button class="add-cart">Add to Cart</button>
+          </div>
+          <div class="prod-name">${item.name}</div>
+          <div class="prod-price">${item.price}</div>
+        </div>
+      `).join('');
+
+      document.querySelectorAll('.add-cart').forEach((btn, i) => {
+        btn.addEventListener('click', () => {
+          cart.push(items[i]);
+          cartCount.textContent = cart.length;
+        });
+      });
+    }
+
+    function renderCartPage() {
+      productsSection.style.display = 'none';
+      cartPage.style.display = 'block';
+      cartItems.innerHTML = cart.map(item => `
+        <div class="product-card">
+          <div class="image-wrap"><img src="${item.img}" alt="${item.name}" /></div>
+          <div class="prod-name">${item.name}</div>
+          <div class="prod-price">${item.price}</div>
+        </div>
+      `).join('');
+      const total = cart.reduce((sum, item) => sum + parseInt(item.price.replace(/\D/g, '')), 0);
+      cartTotal.textContent = total;
+    }
+
+    document.getElementById('cartIcon').addEventListener('click', () => {
+      renderCartPage();
+    });
+
+    document.querySelectorAll('[data-cat]').forEach(el => {
+      el.addEventListener('click', () => {
+        renderProducts(el.dataset.cat);
+      });
+    });
+
+    renderProducts();
+  </script>
+</body>
+</html>
